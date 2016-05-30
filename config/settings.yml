@@ -1,0 +1,2 @@
+ward_server_uri: http://localhost:3000
+log_file: log/agent.log
