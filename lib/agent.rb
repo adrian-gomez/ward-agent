@@ -1,15 +1,18 @@
 require 'logger'
+require 'json'
 
 require 'httparty'
+require 'usagewatch'
 require 'yew'
 
 class Agent
 
+  HEADERS = { 'Content-Type' => 'application/json' }
   READINGS_PATH = '/api/readings'
 
   def emit!
     logger.debug("Sending data: #{data}")
-    HTTParty.post(readings_path, { body: { reading: { data: data } } }).tap do |response|
+    do_post(readings_path, { reading: { data: data } }).tap do |response|
       log_response(response)
     end
   rescue => error
@@ -18,6 +21,10 @@ class Agent
   end
 
   private
+
+  def do_post(path, data)
+    HTTParty.post(path, { body: JSON(data), headers: HEADERS })
+  end
 
   def readings_path
     URI.join(settings.ward_server_uri, READINGS_PATH).to_s
@@ -40,15 +47,15 @@ class Agent
   end
 
   def get_cpu_usage
-    rand * 100
+    Usagewatch.uw_cpuused
   end
 
   def get_disk_usage
-    rand * 100
+    Usagewatch.uw_diskused_perc
   end
 
   def get_process_list
-    %w[process] * 100
+    Usagewatch.uw_cputop
   end
 
   def logger

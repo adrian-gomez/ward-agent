@@ -23,10 +23,21 @@ RSpec.describe Agent do
   end
 
   it 'sends the readings data' do
+    body = JSON({ reading: { data: {  cpu_usage: cpu_usage,
+                                      disk_usage: disk_usage,
+                                      process_list: process_list } } })
     expect(HTTParty).to receive(:post).with('http://localhost:3000/api/readings',
-                                            { body: { reading: { data: {  cpu_usage: cpu_usage,
-                                                                          disk_usage: disk_usage,
-                                                                          process_list: process_list } } } })
+                                            hash_including(body: body))
+
+    agent.emit!
+  end
+
+  it 'sends the data as a json' do
+    body = JSON({ reading: { data: {  cpu_usage: cpu_usage,
+                                      disk_usage: disk_usage,
+                                      process_list: process_list } } })
+    expect(HTTParty).to receive(:post).with('http://localhost:3000/api/readings',
+                                            hash_including(headers: { 'Content-Type' => 'application/json' }))
 
     agent.emit!
   end
